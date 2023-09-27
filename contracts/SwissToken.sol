@@ -37,7 +37,7 @@ contract SwisstronikCoin is ERC20Burnable, Ownable {
     error DecentralizedStableCoin_BurnAmountExceedsBalance();
     error DecentralizedStableCoin_NotZeroAddress();
 
-    constructor() ERC20("Swiss Coin", "SCN") {}
+    constructor() ERC20("Swisstronik Token", "STT") {}
 
     function burn(uint256 _amount) public override onlyOwner {
         uint256 balance = balanceOf(msg.sender);

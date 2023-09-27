@@ -1,30 +1,37 @@
-const hre = require("hardhat");
-const { encryptDataField, decryptNodeResponse } = require("@swisstronik/swisstronik.js");
 
-const sendShieldedTransaction = async (signer, destination, data, value) => {
-  const rpclink = hre.network.config.url;
-  const [encryptedData] = await encryptDataField(rpclink, data);
-  return await signer.sendTransaction({
-    from: signer.address,
-    to: destination,
-    data: encryptedData,
-    value,
-  });
-};
+const { ethers } = require("hardhat");
+require("@swisstronik/swisstronik.js");
 
-async function main() {
-  const contractAddress = "0xADc5dDB4a23C0D471786625B3d9f16d4Ad08A9C3";
-  const [signer] = await hre.ethers.getSigners();
-  const contractFactory = await hre.ethers.getContractFactory("SwisstronikCoin");
-  const contract = contractFactory.attach(contractAddress);
-  const functionName = "setMessage";
-  const messageToSet = "Hello Swisstronik!!";
-  const setMessageTx = await sendShieldedTransaction(signer, contractAddress, contract.interface.encodeFunctionData(functionName, [messageToSet]), 0);
-  await setMessageTx.wait();
-  console.log("Transaction Receipt: ", setMessageTx);
+async function mintTokens() {
+  // Replace with your contract address and private key
+  const contractAddress = "0x6196DE407ba242c1988eA93a86a8ab5Be76995a9";
+  const privateKey = "privatekey";
+
+  // Connect to the Swisstronik network
+  const provider = new ethers.providers.JsonRpcProvider("https://json-rpc.testnet.swisstronik.com/");
+  const wallet = new ethers.Wallet(privateKey, provider);
+
+  // Load the contract
+  const contract = await ethers.getContractAt("SwisstronikCoin", contractAddress, wallet);
+
+  // Specify the recipient's address
+  const recipientAddress = "0x0e9b25255462C0912b2a268b078045002f980Cc";
+
+  // Specify the amount of tokens to mint
+  const amountToMint = 100;
+
+  // Call the mint function
+  const tx = await contract.mint(recipientAddress, amountToMint);
+
+  // Wait for the transaction to be mined
+  await tx.wait();
+
+  console.log(`Minted ${amountToMint} tokens to ${recipientAddress}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+mintTokens()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
